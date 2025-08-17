@@ -112,10 +112,8 @@ def get_c4(nsamples, seed, seqlen, tokenizer):
         tuple: A tuple containing trainloader (list of input and target pairs) and encoded validation dataset.
     """
     # Load train and validation datasets
-    traindata = load_dataset('allenai/c4', 'allenai--c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train')
-    valdata = load_dataset('allenai/c4', 'allenai--c4', data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
-    # traindata = load_dataset('json', data_files={'train': 'datasets/c4/c4-train.00000-of-01024.json.gz'}, split='train')
-    # valdata = load_dataset('json', data_files={'validation': 'datasets/c4/c4-validation.00000-of-00008.json.gz'}, split='validation')
+    traindata = load_dataset('allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train')
+    valdata = load_dataset('allenai/c4', data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, split='validation')
     
     # Generate samples from training set using random seed and specified sequence length
     random.seed(seed)
@@ -126,7 +124,7 @@ def get_c4(nsamples, seed, seqlen, tokenizer):
             trainenc = tokenizer(traindata[i]['text'], return_tensors='pt')
             if trainenc.input_ids.shape[1] > seqlen:
                 break
-        i = random.randint(0, trainenc.input_ids.shape[1] - seqlen - 1)
+        i = random.randint(0, trainenc.input_ids.shape[1] - seqlen)
         j = i + seqlen
         inp = trainenc.input_ids[:, i:j]
         tar = inp.clone()
@@ -138,6 +136,66 @@ def get_c4(nsamples, seed, seqlen, tokenizer):
     valenc = valenc.input_ids[:, :(256 * seqlen)]
     valenc = TokenizerWrapper(valenc)
     return trainloader, valenc
+
+def get_alpaca(nsamples, seed, seqlen, tokenizer):
+    trainenc = torch.load(
+        f='calibration_data/alpaca_82_2048_1.pt',
+        weights_only=True,
+    )
+    testenc = None
+
+    trainloader = []
+    for i in range(nsamples):
+        inp = trainenc[i]
+        tar = inp.clone()
+        tar[:, :-1] = -100
+        trainloader.append((inp, tar))
+    return trainloader, testenc
+
+def get_openbookqa(nsamples, seed, seqlen, tokenizer):
+    trainenc = torch.load(
+        f='calibration_data/openbookqa_385_2048_1.pt',
+        weights_only=True,
+    )
+    testenc = None
+
+    trainloader = []
+    for i in range(nsamples):
+        inp = trainenc[i]
+        tar = inp.clone()
+        tar[:, :-1] = -100
+        trainloader.append((inp, tar))
+    return trainloader, testenc
+
+def get_piqa(nsamples, seed, seqlen, tokenizer):
+    trainenc = torch.load(
+        f='calibration_data/piqa_489_2048_1.pt',
+        weights_only=True,
+    )
+    testenc = None
+
+    trainloader = []
+    for i in range(nsamples):
+        inp = trainenc[i]
+        tar = inp.clone()
+        tar[:, :-1] = -100
+        trainloader.append((inp, tar))
+    return trainloader, testenc
+
+def get_my_wikitext2(nsamples, seed, seqlen, tokenizer):
+    trainenc = torch.load(
+        f='calibration_data/wikitext2_256_2048_1.pt',
+        weights_only=True,
+    )
+    testenc = None
+
+    trainloader = []
+    for i in range(nsamples):
+        inp = trainenc[i]
+        tar = inp.clone()
+        tar[:, :-1] = -100
+        trainloader.append((inp, tar))
+    return trainloader, testenc
 
 # Function to select the appropriate loader based on dataset name
 def get_loaders(name='wikitext2', nsamples=128, seed=0, seqlen=2048, tokenizer=None):
