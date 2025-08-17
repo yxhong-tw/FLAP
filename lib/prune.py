@@ -306,7 +306,7 @@ def prune_flap(args, model, tokenizer, device=torch.device("cuda:0")):
     for i in tqdm(range(len(layers)), desc="Processing layers"):
         layer = layers[i]
         subset = {}
-        subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
+        # subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
         subset.update({'mlp.down_proj': find_layers(layer)['mlp.down_proj']})
 
         if f"model.layers.{i}" in getattr(model, 'hf_device_map', {}):   ## handle the case for llama-30B and llama-65B, when the device map has multiple GPUs;
@@ -392,9 +392,21 @@ def prune_flap(args, model, tokenizer, device=torch.device("cuda:0")):
             attn_mask = (attn_metric > threshold)
             mlp_mask = (mlp_metric > threshold)
     else:
-        attn_mask = torch.stack(attn_mask) 
-        mlp_mask = torch.stack(mlp_mask)
-    
+        try:
+            attn_mask = torch.stack(attn_mask)
+        except:
+            attn_mask = [None] * len(layers)
+
+        try:
+            mlp_mask = torch.stack(mlp_mask)
+        except:
+            mlp_mask = [None] * len(layers)
+
+    if len(attn_baseline_inp_list) == 0:
+        attn_baseline_inp_list = [None] * len(layers)
+    if len(mlp_baseline_inp_list) == 0:
+        mlp_baseline_inp_list = [None] * len(layers)
+
     for idx in range(len(layers)):
         if f"model.layers.{i}" in getattr(model, 'hf_device_map', {}): 
             compress(model.model.layers[idx], attn_mask[idx], None, attn_baseline_inp_list[idx], None, model.hf_device_map[f"model.layers.{idx}"], unstr=args.unstr)
@@ -434,7 +446,7 @@ def prune_wanda_sp(args, model, tokenizer, device=torch.device("cuda:0")):
     for i in range(len(layers)):
         layer = layers[i]
         subset = {}
-        subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
+        # subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
         subset.update({'mlp.down_proj': find_layers(layer)['mlp.down_proj']})
 
         if f"model.layers.{i}" in getattr(model, 'hf_device_map', {}):   ## handle the case for llama-30B and llama-65B, when the device map has multiple GPUs;
@@ -502,7 +514,7 @@ def prune_magnitude_sp(args, model, tokenizer, device=torch.device("cuda:0")):
     for i in range(len(layers)):
         layer = layers[i]
         subset = {}
-        subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
+        # subset.update({'self_attn.o_proj': find_layers(layer)['self_attn.o_proj']})
         subset.update({'mlp.down_proj': find_layers(layer)['mlp.down_proj']})
 
         for name in subset:
