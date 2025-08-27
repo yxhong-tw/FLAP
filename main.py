@@ -54,6 +54,7 @@ def main():
     parser.add_argument('--unstr', action="store_true")
     parser.add_argument('--eval', action="store_true")
     parser.add_argument('--save_model', type=str, default=None, help='Path to save the pruned model.')
+    parser.add_argument('--calibration_data', type=str, default='wikitext2')
     args = parser.parse_args()
     
     # Setting seeds for reproducibility

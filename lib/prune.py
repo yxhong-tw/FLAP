@@ -291,7 +291,8 @@ def prune_flap(args, model, tokenizer, device=torch.device("cuda:0")):
     model.config.use_cache = False 
     
     print("loading calibdation data")
-    dataloader, _ = get_loaders("wikitext2", nsamples=args.nsamples,seed=args.seed,seqlen=model.seqlen,tokenizer=tokenizer)
+    # It is recommended to use wikitext2 dataset there.
+    dataloader, _ = get_loaders(args.calibration_data, nsamples=args.nsamples,seed=args.seed,seqlen=model.seqlen,tokenizer=tokenizer)
     print("dataset loading complete")
     
     with torch.no_grad():
@@ -436,7 +437,8 @@ def prune_wanda_sp(args, model, tokenizer, device=torch.device("cuda:0")):
     model.config.use_cache = False 
     
     print("loading calibdation data")
-    dataloader, _ = get_loaders("c4",nsamples=128,seed=args.seed,seqlen=model.seqlen,tokenizer=tokenizer)
+    # It is recommended to use c4 dataset there.
+    dataloader, _ = get_loaders(args.calibration_data, nsamples=128,seed=args.seed,seqlen=model.seqlen,tokenizer=tokenizer)
     print("dataset loading complete")
     
     with torch.no_grad():
